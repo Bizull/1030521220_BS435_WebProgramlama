@@ -1,11 +1,6 @@
-// src/App.tsx
-
 import { useState } from 'react';
 import './App.css';
 
-// === 1. ADIM: TÜM RESİMLERİ İÇERİ AL ===
-// EĞER RESİMLERİ 'src/assets/gorseller/' İÇİNE KOYDUYSAN BU YOLLAR DOĞRUDUR.
-// EĞER 'src/assets/' İÇİNE KOYDUYSAN '/gorseller' KISMINI SİL.
 import aiKitap from './assets/gorseller/ai-eski-kitap.png';
 import aiFil from './assets/gorseller/ai-fil.png';
 import aiKabak from './assets/gorseller/ai-kabak.png';
@@ -96,6 +91,8 @@ function App() {
     const [message, setMessage] = useState('Sence hangisi yapay zeka ile üretildi?');
     const [gameWon, setGameWon] = useState(false);
     const [correctId, setCorrectId] = useState<number | null>(null);
+    const [gameState, setGameState] = useState<'welcome' | 'playing'>('welcome');
+    const [gameMode, setGameMode] = useState<'kategorili' | 'zamana_karsi' | null>(null);
 
     // --- OYUN MANTIĞI ---
 
@@ -128,31 +125,66 @@ function App() {
         setCorrectId(null);
     };
 
-    // --- JSX (GÖRÜNÜM) ---
+    // --- JSX (GÖRÜNÜM) - DÜZELTİLMİŞ KISIM ---
     return (
         <div className="App">
-            <h1>Yapay Zekayı Bul!</h1>
+            {gameState === 'welcome' ? (
+                // 1. DURUM: Karşılama Ekranı
+                <>
+                    <h1>Yapay Zekayı Bul!</h1>
+                    <p>Bu oyunda sana 3 adet görsel sunulacak. İkisi gerçek, biri yapay zeka. Amacın yapay zeka ile üretilmiş olanı bulmak!</p>
+                    <h2>Lütfen bir oyun modu seç:</h2>
+                    <button onClick={() => {
+                        setGameMode('kategorili');
+                        setGameState('playing');
+                    }} className="btn-primary">
+                        Kategorili Mod
+                    </button>
+                    <button onClick={() => {
+                        setGameMode('zamana_karsi');
+                        setGameState('playing');
+                    }} className="btn-primary" >
+                        Zamana Karşı Mod
+                    </button>
+                </>
+            ) : (
+                // 2. DURUM: Oyun Ekranı (Oyun Başladı)
+                // 'gameState' 'playing' ise, BURADA YENİ BİR KONTROL YAPIYORUZ
+                // JavaScript kodu için { } açtık
+                gameMode === 'kategorili' ? (
+                    // 2a. ALT DURUM: Kategorili Mod
+                    <>
+                        <h1>Yapay Zekayı Bul!</h1>
+                        <p className="message">{message}</p>
+                        <div className="image-container">
+                            {gorseller.map(image => (
+                                <div
+                                    key={image.id}
+                                    className={`image-box ${correctId === image.id ? 'correct' : ''}`}
+                                    onClick={() => handleImageClick(image)}
+                                >
+                                    <img src={image.src} alt="Tahmin görseli" />
+                                </div>
+                            ))}
+                        </div>
+                        {gameWon && (
+                            <button className="btn-primary" onClick={loadNextRound}>
+                                Yeni Tur
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    // 2b. ALT DURUM: Zamana Karşı Mod
+                    <>
+                        <h2>Zamana Karşı Mod</h2>
+                        <p>Bu mod şu an yapım aşamasında!</p>
+                        <button onClick={() => setGameState('welcome')}>Ana Menüye Dön</button>
+                    </>
+                )
 
-            <p className="message">{message}</p>
-
-            <div className="image-container">
-                {gorseller.map(image => (
-                    <div
-                        key={image.id}
-                        className={`image-box ${correctId === image.id ? 'correct' : ''}`}
-                        onClick={() => handleImageClick(image)}
-                    >
-                        <img src={image.src} alt="Tahmin görseli" />
-                    </div>
-                ))}
-            </div>
-
-            {/* Oyun kazanıldığında "Yeni Tur" butonunu göster */}
-            {gameWon && (
-                <button className="next-round-btn" onClick={loadNextRound}>
-                    Yeni Tur
-                </button>
-            )}
+                // JavaScript kod bloğu { } kapandı
+                )}
+            {/* Ana 'gameState' kontrolü ( ) kapandı */}
         </div>
     );
 }
