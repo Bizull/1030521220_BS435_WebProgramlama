@@ -1,49 +1,30 @@
-/* src/App.css (EN ALTA EKLE) */
+/* src/App.css */
 
-/* Yeni Tur Butonu */
-.btn-primary {
-    margin-top: 10px;
-    padding: 12px 25px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: white;
-    background-color: #887bff; /* Mavi */
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #5f56b3; /* Koyu Mavi */
-    transform: scale(1.06);
-}
+/* === ANA OYUN KARTI === */
 .App {
-    text-align: center;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    /* Ekranı kaplamasın, maksimum 960px genişliğinde olsun */
+    /* Genişlik ve Ortalama */
     max-width: 960px;
-
-    /* Bu sihirli satır: Üst/alttan 40px,
-       sağ/soldan 'auto' (yani otomatik ortala) boşluk bırakır */
     margin: 40px auto;
 
-    /* Artık arka planı şeffaf değil, beyaz bir kart */
-    background-color: #ffffff;
+    /* Arka Plan: Hafif şeffaf beyaz (Buzlu cam etkisi için zemin) */
+    background-color: rgba(255, 255, 255, 0.95);
 
-    /* Kenarları yumuşatalım */
-    border-radius: 16px;
+    /* Modern Sınırlar */
+    border: 1px solid rgba(136, 123, 255, 0.2); /* Çok ince mor çerçeve */
+    border-radius: 24px; /* Daha yuvarlak köşeler */
 
-    /* Güzel, yumuşak bir gölge verelim */
-    box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+    /* Derinlik katan morumsu gölge */
+    box-shadow: 0 20px 60px rgba(136, 123, 255, 0.15);
 
-    /* Kartın iç boşluğu (içerik kenara yapışmasın) */
-    padding: 30px 40px;
-
-    /* İçindeki metinleri yine ortalasın */
+    /* İçerik düzeni */
+    padding: 40px;
     text-align: center;
+
+    /* Modern bulanıklık efekti (Arka plandaki noktalar hafifçe buzlanır) */
+    backdrop-filter: blur(10px);
 }
+
+/* === RESİM ALANI === */
 .image-container {
     display: flex;
     flex-wrap: wrap;
@@ -51,32 +32,75 @@
     gap: 20px;
     margin-top: 30px;
 }
+
 .image-box {
-    border: 4px solid #121122; /* Gri çerçeve */
-    border-radius: 10px;    /* Kenarları yuvarlat */
-    padding: 5px;          /* Resim ile çerçeve arasına iç boşluk */
-    background-color: #3d1f9f; /* Hafif gri arka plan */
-    cursor: pointer;        /* Üzerine gelince fare imlecini 'el' yap */
-    transition: all 0.3s ease; /* BÜTÜN değişiklikler (hover vb.) 0.3 saniyede, yavaşlayarak gerçekleşsin */
+    border: 4px solid #e0e0e0; /* Varsayılan gri çerçeve */
+    border-radius: 16px;
+    padding: 8px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Daha havalı animasyon */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
+
 .image-box:hover {
-    border-color: #9f8aff; /* Çerçeve rengini mavi-mor yap */
-    transform: scale(1.01); /* Kutuyu %1 büyüt */
+    border-color: #887bff; /* Senin mor rengin */
+    transform: translateY(-5px); /* Hover olunca hafifçe yukarı kalksın */
+    box-shadow: 0 10px 20px rgba(136, 123, 255, 0.2);
 }
+
+/* RESİMLERİN SIĞMASI İÇİN AYAR (Önemli!) */
 .image-box img {
-    width: 250px;
+    width: 250px;  /* Küçültüldü ki yan yana sığsınlar */
     height: 250px;
-    object-fit: cover; /* Bu çok önemli! */
+    object-fit: cover;
     display: block;
+    border-radius: 8px;
 }
-.message {
-    font-size: 1.2rem;
-    font-weight: bold;
-    min-height: 25px; /* Önemli! */
-}
+
+/* Doğru bilince */
 .image-box.correct {
-    background-color: #4CAF50; /* Yeşil */
-    border-color: #388E3C;
-    transform: scale(1.05); /* %10 büyüt */
-    cursor: not-allowed; /* Tıklanamaz imleci */
+    background-color: #d1fae5; /* Açık yeşil zemin */
+    border-color: #10b981; /* Koyu yeşil çerçeve */
+    transform: scale(1.02);
+    cursor: default;
+}
+
+/* Mesaj Alanı */
+.message {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin: 20px 0;
+    min-height: 30px;
+}
+
+/* === BUTONLAR (Senin Fancy Stil) === */
+.btn-primary {
+    margin: 10px;
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #887bff 0%, #7a6bf0 100%); /* Hafif degrade */
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(136, 123, 255, 0.4); /* Butonun parlaması */
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(136, 123, 255, 0.6);
+}
+
+/* Oyun Bitti Alanı */
+.game-over {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
