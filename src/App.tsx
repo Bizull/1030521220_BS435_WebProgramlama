@@ -1,17 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // useRef eklendi!
 import './App.css';
 
-// DİKKAT: Klasör adın 'gorseller' ise bu yollar doğru.
-// Eğer klasör adın 'images' ise aşağıdaki 'gorseller' kısımlarını 'images' yapmalısın.
+// === IMPORTLAR ===
+// Klasör yolunun 'gorseller' veya 'images' olmasına dikkat et
 import aiKitap from './assets/gorseller/ai-eski-kitap.png';
 import aiFil from './assets/gorseller/ai-fil.png';
 import aiKabak from './assets/gorseller/ai-kabak.png';
+import aiPusula from './assets/gorseller/Ai pusula.png';
+import aiKarManzara from './assets/gorseller/Ai kar manzara.png';
+import aiAyManzara from './assets/gorseller/Ai manzara.png';
+import aiKurabiye from './assets/gorseller/kurabiye ai.png';
+
 import realKitap1 from './assets/gorseller/gercek-eski-kitap1.jpg';
 import realKitap2 from './assets/gorseller/gercek-eski-kitap-2.jpg';
 import realFil1 from './assets/gorseller/gercek-fil.jpg';
 import realFil2 from './assets/gorseller/gercek-fil-2.jpg';
 import realKabak1 from './assets/gorseller/gercek-kabak-1.jpg';
 import realKabak2 from './assets/gorseller/gercek-kabak-2.jpg';
+import realPusula1 from './assets/gorseller/gercek pusula.jpg';
+import realPusula2 from './assets/gorseller/gercek pusula 2.jpg';
+import realKarManzara1 from './assets/gorseller/gercek kar manzara.jpg';
+import realKarManzara2 from './assets/gorseller/gercek kar manzara 2.jpg';
+import realAyManzara1 from './assets/gorseller/gercek Ay 1.jpg';
+import realAyManzara2 from './assets/gorseller/gercek ay 2.jpg';
+import realKurabiye1 from './assets/gorseller/kurabiye gercek 1.jpg';
+import realKurabiye2 from './assets/gorseller/kurabiye gercek 2.jpg';
 
 // === VERİ YAPILARI ===
 interface GameImage {
@@ -28,6 +41,10 @@ type GameSet = {
     }[];
 };
 
+// === OPTİMİZASYON: VERİ SETİNİ DIŞARI ALDIK (Global Scope) ===
+// Bu değişken artık App fonksiyonunun dışında.
+// Yani App her render edildiğinde (saniye başı) bu liste tekrar oluşturulmuyor.
+// Sadece sayfa ilk açıldığında 1 kere oluşturuluyor.
 const allGameSets: GameSet[] = [
     {
         theme: 'kitap',
@@ -53,19 +70,69 @@ const allGameSets: GameSet[] = [
             { src: realKabak2, isAI: false },
         ],
     },
+    {
+        theme: 'pusula',
+        gorseller: [
+            { src: aiPusula, isAI: true },
+            { src: realPusula1, isAI: false },
+            { src: realPusula2, isAI: false },
+        ],
+    },
+    {
+        theme: 'kar_manzara',
+        gorseller: [
+            { src: aiKarManzara, isAI: true },
+            { src: realKarManzara1, isAI: false },
+            { src: realKarManzara2, isAI: false },
+        ],
+    },
+    {
+        theme: 'Ay',
+        gorseller: [
+            { src: aiAyManzara, isAI: true },
+            { src: realAyManzara1, isAI: false },
+            { src: realAyManzara2, isAI: false },
+        ],
+    },
+    {
+        theme: 'kurabiye',
+        gorseller: [
+            { src: aiKurabiye, isAI: true },
+            { src: realKurabiye1, isAI: false },
+            { src: realKurabiye2, isAI: false },
+        ],
+    },
 ];
-
-const getRandomItem = (array: any[]) => {
-    return array[Math.floor(Math.random() * array.length)];
-};
 
 // === ANA OYUN BİLEŞENİ ===
 function App() {
 
+    // === AKILLI RASTGELELİK (TORBA MANTIĞI) ===
+    // useRef kullanarak, render'lar arasında kaybolmayan bir "torba" oluşturuyoruz.
+    const deckRef = useRef<number[]>([]);
+
     // --- Yardımcı Fonksiyon: Yeni Tur Kur ---
     const setupNewRound = (): GameImage[] => {
-        const randomSet = getRandomItem(allGameSets);
+
+        // 1. Torba boşsa doldur
+        if (deckRef.current.length === 0) {
+            deckRef.current = allGameSets.map((_, index) => index);
+        }
+
+        // 2. Torbadan rastgele bir indeks seç
+        const randomIndexInDeck = Math.floor(Math.random() * deckRef.current.length);
+        const selectedSetIndex = deckRef.current[randomIndexInDeck];
+
+        // 3. Seçilen indeksi torbadan ÇIKAR
+        deckRef.current.splice(randomIndexInDeck, 1);
+
+        // 4. O indekse denk gelen oyun setini al
+        const randomSet = allGameSets[selectedSetIndex];
+
+        // 5. Setin içindeki resimleri karıştır
         const shuffledGorseller = randomSet.gorseller.slice().sort(() => Math.random() - 0.5);
+
+        // 6. ID verip döndür
         return shuffledGorseller.map((image, index) => ({
             ...image,
             id: index + 1,
@@ -87,6 +154,24 @@ function App() {
     const [timeLeft, setTimeLeft] = useState(30);
     const [timerActive, setTimerActive] = useState(false);
 
+    // --- ÖN YÜKLEME (PRELOADING) ---
+    // Bu useEffect sadece sayfa ilk açıldığında 1 kere çalışır.
+    // Tüm resimleri arka planda tarayıcıya yükletir, böylece oyun içinde kasma olmaz.
+    useEffect(() => {
+        allGameSets.forEach((set) => {
+            set.gorseller.forEach((img) => {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.as = 'image';
+                link.href = img.src;
+                document.head.appendChild(link);
+                // Alternatif JS yöntemi (garanti olsun diye):
+                const i = new Image();
+                i.src = img.src;
+            });
+        });
+    }, []); // [] demek: Sadece ilk açılışta çalış
+
     // --- ZAMANLAYICI (TIMER) MANTIĞI ---
     useEffect(() => {
         let interval: any = null;
@@ -95,7 +180,7 @@ function App() {
                 setTimeLeft((prevTime) => prevTime - 1);
             }, 1000);
         } else if (timeLeft === 0) {
-            setTimerActive(false); // Süre bitti
+            setTimerActive(false);
         }
         return () => clearInterval(interval);
     }, [timerActive, timeLeft]);
@@ -146,6 +231,8 @@ function App() {
         setScore(0);
         setTimeLeft(30);
         setTimerActive(true);
+        // Yeni mod başlarken torbayı sıfırlayalım ki taze başlasın
+        deckRef.current = [];
         setGorseller(setupNewRound());
         setMessage('Hızlı ol! Yapay zekayı bul!');
     };
@@ -164,6 +251,9 @@ function App() {
                     <button onClick={() => {
                         setGameMode('kategorili');
                         setGameState('playing');
+                        // Mod değiştirirken torbayı sıfırla
+                        deckRef.current = [];
+                        setGorseller(setupNewRound());
                     }} className="btn-primary">
                         Kategorili Mod
                     </button>
@@ -174,7 +264,6 @@ function App() {
                 </>
             ) : (
                 // 2. DURUM: Oyun Ekranı
-                // Ternary Operatörü: gameMode kategorili mi?
                 gameMode === 'kategorili' ? (
                     // 2a. Kategorili Mod
                     <>
@@ -200,7 +289,6 @@ function App() {
                 ) : (
                     // 2b. Zamana Karşı Mod
                     <>
-                        {/* Bilgi Çubuğu */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 'bold' }}>
                             <span style={{ color: timeLeft < 10 ? 'red' : 'black' }}>
                                 Süre: {timeLeft}
@@ -210,7 +298,6 @@ function App() {
                             </span>
                         </div>
 
-                        {/* Süre Kontrolü */}
                         {timeLeft === 0 ? (
                             <div className="game-over">
                                 <h2>Süre Doldu!</h2>
