@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react'; // useRef eklendi!
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-// === IMPORTLAR ===
-// Klasör yolunun 'gorseller' veya 'images' olmasına dikkat et
+// === IMPORTLAR (Senin yerel dosyaların) ===
 import aiKitap from './assets/gorseller/ai-eski-kitap.png';
 import aiFil from './assets/gorseller/ai-fil.png';
 import aiKabak from './assets/gorseller/ai-kabak.png';
@@ -31,23 +30,24 @@ interface GameImage {
     id: number;
     src: string;
     isAI: boolean;
+    hint: string;
 }
 
 type GameSet = {
     theme: string;
+    hint: string;
     gorseller: {
         src: string;
         isAI: boolean;
     }[];
 };
 
-// === OPTİMİZASYON: VERİ SETİNİ DIŞARI ALDIK (Global Scope) ===
-// Bu değişken artık App fonksiyonunun dışında.
-// Yani App her render edildiğinde (saniye başı) bu liste tekrar oluşturulmuyor.
-// Sadece sayfa ilk açıldığında 1 kere oluşturuluyor.
+// === OYUN SETLERİ VE İPUÇLARI ===
+// Bu liste App fonksiyonunun DIŞINDA tanımlandı (Performans için)
 const allGameSets: GameSet[] = [
     {
         theme: 'kitap',
+        hint: 'Kitap üzerindeki kontrasta ve doku detaylarına dikkat et!',
         gorseller: [
             { src: aiKitap, isAI: true },
             { src: realKitap1, isAI: false },
@@ -56,6 +56,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'fil',
+        hint: 'Fil sence de fotoğraf çekildiğinin farkındaymış gibi değil mi?.',
         gorseller: [
             { src: aiFil, isAI: true },
             { src: realFil1, isAI: false },
@@ -64,6 +65,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'kabak',
+        hint: 'Kabaklardaki Aşırı pürüzsüz veya mantıksız gölgeler ve dokular yapay zeka işaretidir.',
         gorseller: [
             { src: aiKabak, isAI: true },
             { src: realKabak1, isAI: false },
@@ -72,6 +74,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'pusula',
+        hint: 'Pusulanın üzerindeki yön harflerine (N, S, E, W) ve metalin yansımasına dikkat et. Harfler bozuk mu?',
         gorseller: [
             { src: aiPusula, isAI: true },
             { src: realPusula1, isAI: false },
@@ -80,6 +83,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'kar_manzara',
+        hint: 'Genel ortama bak.. baskın bir renk tonu var mı? veya ağaçlar birbirine fazla benzemiyor mu sence de?',
         gorseller: [
             { src: aiKarManzara, isAI: true },
             { src: realKarManzara1, isAI: false },
@@ -88,6 +92,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'Ay',
+        hint: 'Ay`ın boyutunda bir anormallik var. ayrıca günün o saatinde bu kadar parlak olmayabilir.',
         gorseller: [
             { src: aiAyManzara, isAI: true },
             { src: realAyManzara1, isAI: false },
@@ -96,6 +101,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'kurabiye',
+        hint: 'Kurabiyenin üzerindeki çikolata parçacıklarında bir anormallik olabilir...',
         gorseller: [
             { src: aiKurabiye, isAI: true },
             { src: realKurabiye1, isAI: false },
@@ -108,7 +114,6 @@ const allGameSets: GameSet[] = [
 function App() {
 
     // === AKILLI RASTGELELİK (TORBA MANTIĞI) ===
-    // useRef kullanarak, render'lar arasında kaybolmayan bir "torba" oluşturuyoruz.
     const deckRef = useRef<number[]>([]);
 
     // --- Yardımcı Fonksiyon: Yeni Tur Kur ---
@@ -132,16 +137,18 @@ function App() {
         // 5. Setin içindeki resimleri karıştır
         const shuffledGorseller = randomSet.gorseller.slice().sort(() => Math.random() - 0.5);
 
-        // 6. ID verip döndür
+        // 6. ID verip ve İPUCUNU EKLEYİP döndür
         return shuffledGorseller.map((image, index) => ({
             ...image,
             id: index + 1,
+            hint: randomSet.hint
         }));
     };
 
     // --- STATE'LER ---
     const [gorseller, setGorseller] = useState<GameImage[]>(() => setupNewRound());
-    const [message, setMessage] = useState('Sence hangisi yapay zeka ile üretildi?');
+    // Mesajın sadece yazı değil, HTML (renkli yazı vb.) içerebilmesi için tipini güncelledik
+    const [message, setMessage] = useState<string | JSX.Element>('Sence hangisi yapay zeka ile üretildi?');
     const [gameWon, setGameWon] = useState(false);
     const [correctId, setCorrectId] = useState<number | null>(null);
 
@@ -155,8 +162,7 @@ function App() {
     const [timerActive, setTimerActive] = useState(false);
 
     // --- ÖN YÜKLEME (PRELOADING) ---
-    // Bu useEffect sadece sayfa ilk açıldığında 1 kere çalışır.
-    // Tüm resimleri arka planda tarayıcıya yükletir, böylece oyun içinde kasma olmaz.
+    // Resimlerin hızlı değişmesi için arka planda yükleme yapar
     useEffect(() => {
         allGameSets.forEach((set) => {
             set.gorseller.forEach((img) => {
@@ -165,12 +171,12 @@ function App() {
                 link.as = 'image';
                 link.href = img.src;
                 document.head.appendChild(link);
-                // Alternatif JS yöntemi (garanti olsun diye):
+
                 const i = new Image();
                 i.src = img.src;
             });
         });
-    }, []); // [] demek: Sadece ilk açılışta çalış
+    }, []);
 
     // --- ZAMANLAYICI (TIMER) MANTIĞI ---
     useEffect(() => {
@@ -195,7 +201,15 @@ function App() {
             setGameWon(true);
             setCorrectId(clickedImage.id);
         } else {
-            setMessage('Yanlış seçim! Bu gerçek bir görseldi. Kalanlardan tekrar dene.');
+            // İPUCU SİSTEMİ DEVREDE
+            // "Yanlış!" yazısını kırmızı ve bir üst satıra alıyoruz
+            setMessage(
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ color: 'red', fontWeight: 'bold', fontSize: '1.4rem' }}>Yanlış!</span>
+                    <span style={{ marginTop: '5px' }}>İpucu: {clickedImage.hint}</span>
+                </div>
+            );
+
             setGorseller(prevGorseller =>
                 prevGorseller.filter(img => img.id !== clickedImage.id)
             );
@@ -231,8 +245,7 @@ function App() {
         setScore(0);
         setTimeLeft(30);
         setTimerActive(true);
-        // Yeni mod başlarken torbayı sıfırlayalım ki taze başlasın
-        deckRef.current = [];
+        deckRef.current = []; // Torbayı sıfırla
         setGorseller(setupNewRound());
         setMessage('Hızlı ol! Yapay zekayı bul!');
     };
@@ -251,7 +264,6 @@ function App() {
                     <button onClick={() => {
                         setGameMode('kategorili');
                         setGameState('playing');
-                        // Mod değiştirirken torbayı sıfırla
                         deckRef.current = [];
                         setGorseller(setupNewRound());
                     }} className="btn-primary">
@@ -268,7 +280,8 @@ function App() {
                     // 2a. Kategorili Mod
                     <>
                         <h1>Yapay Zekayı Bul!</h1>
-                        <p className="message">{message}</p>
+                        {/* Mesaj kısmı artık string veya div olabileceği için div içine aldık */}
+                        <div className="message">{message}</div>
                         <div className="image-container">
                             {gorseller.map(image => (
                                 <div
