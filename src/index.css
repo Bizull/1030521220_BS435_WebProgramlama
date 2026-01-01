@@ -1,10 +1,9 @@
 :root {
-    /* Yazı tipi ayarları - Standart ve temiz */
+
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
 
-    /* Tarayıcının yazı tiplerini daha pürüzsüz göstermesi için ayarlar */
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -13,24 +12,17 @@
 
 body {
     margin: 0;
-    min-height: 100vh; /* Sayfa her zaman en az ekran boyu kadar olsun */
+    min-height: 100vh;
 
-    /* === ZEMİN VE DESEN AYARLARI === */
-
-    /* 1. Zemin Rengi (Noktaların arkasındaki renk): Çok açık gri/lila */
     background-color: #f3f4f6;
 
-    /* 2. Desen: 1px genişliğinde mor noktalar */
     background-image: radial-gradient(#887bff 1px, transparent 1px);
 
-    /* 3. Desen Boyutu: Noktalar arası 24px mesafe */
     background-size: 24px 24px;
 
-    /* Yazı rengi: Koyu gri (Göz yormayan siyah) */
+
     color: #213547;
 }
-
-/* Varsayılan link stilleri (İhtiyaten kalsın, zararı yok) */
 a {
     font-weight: 500;
     color: #646cff;

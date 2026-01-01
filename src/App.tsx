@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-// === IMPORTLAR (Senin yerel dosyaların) ===
+
 import aiKitap from './assets/gorseller/ai-eski-kitap.png';
 import aiFil from './assets/gorseller/ai-fil.png';
 import aiKabak from './assets/gorseller/ai-kabak.png';
@@ -25,7 +25,6 @@ import realAyManzara2 from './assets/gorseller/gercek ay 2.jpg';
 import realKurabiye1 from './assets/gorseller/kurabiye gercek 1.jpg';
 import realKurabiye2 from './assets/gorseller/kurabiye gercek 2.jpg';
 
-// === VERİ YAPILARI ===
 interface GameImage {
     id: number;
     src: string;
@@ -42,12 +41,10 @@ type GameSet = {
     }[];
 };
 
-// === OYUN SETLERİ VE İPUÇLARI ===
-// Bu liste App fonksiyonunun DIŞINDA tanımlandı (Performans için)
 const allGameSets: GameSet[] = [
     {
         theme: 'kitap',
-        hint: 'Kitap üzerindeki kontrasta ve doku detaylarına dikkat et!',
+        hint: 'Yapay zeka yazıları bazen anlamsız semboller gibi çizer. Kitap üzerindeki harflere ve doku detaylarına dikkat et!',
         gorseller: [
             { src: aiKitap, isAI: true },
             { src: realKitap1, isAI: false },
@@ -56,7 +53,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'fil',
-        hint: 'Fil sence de fotoğraf çekildiğinin farkındaymış gibi değil mi?.',
+        hint: 'Filin hortumunun ucuna ve derisindeki kırışıklıkların doğallığına odaklan. Yapay zeka bazen anatomik hatalar yapabilir.',
         gorseller: [
             { src: aiFil, isAI: true },
             { src: realFil1, isAI: false },
@@ -65,7 +62,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'kabak',
-        hint: 'Kabaklardaki Aşırı pürüzsüz veya mantıksız gölgeler ve dokular yapay zeka işaretidir.',
+        hint: 'Kabakların sap kısımlarına ve ışığın yüzeye nasıl vurduğuna bak. Aşırı pürüzsüz veya mantıksız gölgeler yapay zeka işaretidir.',
         gorseller: [
             { src: aiKabak, isAI: true },
             { src: realKabak1, isAI: false },
@@ -83,7 +80,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'kar_manzara',
-        hint: 'Genel ortama bak.. baskın bir renk tonu var mı? veya ağaçlar birbirine fazla benzemiyor mu sence de?',
+        hint: 'Ağaç dallarının uçlarına ve karın dokusuna bak. Arka plandaki nesneler birbirine karışmış mı?',
         gorseller: [
             { src: aiKarManzara, isAI: true },
             { src: realKarManzara1, isAI: false },
@@ -92,7 +89,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'Ay',
-        hint: 'Ay`ın boyutunda bir anormallik var. ayrıca günün o saatinde bu kadar parlak olmayabilir.',
+        hint: 'Ay yüzeyindeki kraterlerin dağılımına ve gökyüzüyle birleştiği sınıra dikkat et. Bulutlar doğal duruyor mu?',
         gorseller: [
             { src: aiAyManzara, isAI: true },
             { src: realAyManzara1, isAI: false },
@@ -101,7 +98,7 @@ const allGameSets: GameSet[] = [
     },
     {
         theme: 'kurabiye',
-        hint: 'Kurabiyenin üzerindeki çikolata parçacıklarında bir anormallik olabilir...',
+        hint: 'Kurabiyenin üzerindeki çikolata parçalarının şekline ve hamurun dokusuna bak. Gerçekten fırından çıkmış gibi mi?',
         gorseller: [
             { src: aiKurabiye, isAI: true },
             { src: realKurabiye1, isAI: false },
@@ -110,34 +107,30 @@ const allGameSets: GameSet[] = [
     },
 ];
 
-// === ANA OYUN BİLEŞENİ ===
+
 function App() {
 
-    // === AKILLI RASTGELELİK (TORBA MANTIĞI) ===
+
     const deckRef = useRef<number[]>([]);
 
-    // --- Yardımcı Fonksiyon: Yeni Tur Kur ---
+
     const setupNewRound = (): GameImage[] => {
 
-        // 1. Torba boşsa doldur
+
         if (deckRef.current.length === 0) {
             deckRef.current = allGameSets.map((_, index) => index);
         }
 
-        // 2. Torbadan rastgele bir indeks seç
+
         const randomIndexInDeck = Math.floor(Math.random() * deckRef.current.length);
         const selectedSetIndex = deckRef.current[randomIndexInDeck];
 
-        // 3. Seçilen indeksi torbadan ÇIKAR
         deckRef.current.splice(randomIndexInDeck, 1);
 
-        // 4. O indekse denk gelen oyun setini al
         const randomSet = allGameSets[selectedSetIndex];
 
-        // 5. Setin içindeki resimleri karıştır
         const shuffledGorseller = randomSet.gorseller.slice().sort(() => Math.random() - 0.5);
 
-        // 6. ID verip ve İPUCUNU EKLEYİP döndür
         return shuffledGorseller.map((image, index) => ({
             ...image,
             id: index + 1,
@@ -145,24 +138,19 @@ function App() {
         }));
     };
 
-    // --- STATE'LER ---
     const [gorseller, setGorseller] = useState<GameImage[]>(() => setupNewRound());
-    // Mesajın sadece yazı değil, HTML (renkli yazı vb.) içerebilmesi için tipini güncelledik
-    const [message, setMessage] = useState<string | JSX.Element>('Sence hangisi yapay zeka ile üretildi?');
+
+    const [message, setMessage] = useState<string | JSX.Element>('Senin görevin aşağıdaki üç görselden hangisinin yapay zeka ürünü olduğunu bulmak :) hadi kolay gelsin');
     const [gameWon, setGameWon] = useState(false);
     const [correctId, setCorrectId] = useState<number | null>(null);
 
-    // Oyun Durumu ve Modu
     const [gameState, setGameState] = useState<'welcome' | 'playing'>('welcome');
     const [gameMode, setGameMode] = useState<'kategorili' | 'zamana_karsi' | null>(null);
 
-    // Zamana Karşı Mod State'leri
     const [score, setScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(30);
     const [timerActive, setTimerActive] = useState(false);
 
-    // --- ÖN YÜKLEME (PRELOADING) ---
-    // Resimlerin hızlı değişmesi için arka planda yükleme yapar
     useEffect(() => {
         allGameSets.forEach((set) => {
             set.gorseller.forEach((img) => {
@@ -171,14 +159,12 @@ function App() {
                 link.as = 'image';
                 link.href = img.src;
                 document.head.appendChild(link);
-
                 const i = new Image();
                 i.src = img.src;
             });
         });
     }, []);
 
-    // --- ZAMANLAYICI (TIMER) MANTIĞI ---
     useEffect(() => {
         let interval: any = null;
         if (timerActive && timeLeft > 0) {
@@ -192,17 +178,27 @@ function App() {
     }, [timerActive, timeLeft]);
 
 
-    // --- KATEGORİLİ MOD TIKLAMA MANTIĞI ---
+    const playSound = (isCorrect: boolean) => {
+        const soundUrl = isCorrect
+            ? "https://cdn.pixabay.com/audio/2021/08/04/audio_bb630cc098.mp3" // Başarı sesi (Ding)
+            : "https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3"; // Hata sesi (Buzzer)
+
+        const audio = new Audio(soundUrl);
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log("Ses çalma hatası:", e));
+    };
+
+
     const handleImageClick = (clickedImage: GameImage) => {
         if (gameWon) return;
 
         if (clickedImage.isAI) {
+            playSound(true);
             setMessage('Tebrikler! Doğru görseli buldun.');
             setGameWon(true);
             setCorrectId(clickedImage.id);
         } else {
-            // İPUCU SİSTEMİ DEVREDE
-            // "Yanlış!" yazısını kırmızı ve bir üst satıra alıyoruz
+            playSound(false);
             setMessage(
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <span style={{ color: 'red', fontWeight: 'bold', fontSize: '1.4rem' }}>Yanlış!</span>
@@ -216,15 +212,16 @@ function App() {
         }
     };
 
-    // --- ZAMANA KARŞI TIKLAMA MANTIĞI ---
     const handleTimeAttackClick = (clickedImage: GameImage) => {
         if (timeLeft === 0) return;
 
         if (clickedImage.isAI) {
+            playSound(true);
             setScore(prev => prev + 10);
             setMessage('Süper! +10 Puan');
             setGorseller(setupNewRound());
         } else {
+            playSound(false);
             setMessage('Yanlış! -2 Saniye ceza!');
             setGorseller(prev => prev.filter(img => img.id !== clickedImage.id));
             setTimeLeft(prev => (prev > 2 ? prev - 2 : 0));
@@ -233,28 +230,25 @@ function App() {
 
     const loadNextRound = () => {
         setGorseller(setupNewRound());
-        setMessage('Sence hangisi yapay zeka ile üretildi?');
+        setMessage('Senin görevin aşağıdaki üç görselden hangisinin yapay zeka ürünü olduğunu bulmak :) hadi kolay gelsin');
         setGameWon(false);
         setCorrectId(null);
     };
 
-    // Zamana Karşı Modu Başlat
     const startTimeAttackMode = () => {
         setGameMode('zamana_karsi');
         setGameState('playing');
         setScore(0);
         setTimeLeft(30);
         setTimerActive(true);
-        deckRef.current = []; // Torbayı sıfırla
+        deckRef.current = [];
         setGorseller(setupNewRound());
-        setMessage('Hızlı ol! Yapay zekayı bul!');
+        setMessage('Hızlı ol! Yapay zekayı bul! hata yaparsan sürenden kesilecek...');
     };
 
-    // --- JSX (GÖRÜNÜM) ---
     return (
         <div className="App">
             {gameState === 'welcome' ? (
-                // 1. DURUM: Karşılama Ekranı
                 <>
                     <h1>Yapay Zekayı Bul!</h1>
                     <p>Bu oyunda sana 3 adet görsel sunulacak. İkisi gerçek, biri yapay zeka. Amacın yapay zeka ile üretilmiş olanı bulmak!</p>
@@ -275,12 +269,11 @@ function App() {
                     </button>
                 </>
             ) : (
-                // 2. DURUM: Oyun Ekranı
+
                 gameMode === 'kategorili' ? (
-                    // 2a. Kategorili Mod
+
                     <>
                         <h1>Yapay Zekayı Bul!</h1>
-                        {/* Mesaj kısmı artık string veya div olabileceği için div içine aldık */}
                         <div className="message">{message}</div>
                         <div className="image-container">
                             {gorseller.map(image => (
@@ -293,14 +286,26 @@ function App() {
                                 </div>
                             ))}
                         </div>
-                        {gameWon && (
-                            <button className="btn-primary" onClick={loadNextRound}>
-                                Yeni Tur
+
+                        <div style={{ marginTop: '30px' }}>
+                            {}
+                            {gameWon && (
+                                <button className="btn-primary" onClick={loadNextRound}>
+                                    Yeni Tur
+                                </button>
+                            )}
+
+                            {}
+                            <button
+                                className="btn-primary"
+                                style={{ backgroundColor: '#6c757d', marginLeft: '10px' }}
+                                onClick={() => setGameState('welcome')}
+                            >
+                                Ana Menüye Dön
                             </button>
-                        )}
+                        </div>
                     </>
                 ) : (
-                    // 2b. Zamana Karşı Mod
                     <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '1.2rem', fontWeight: 'bold' }}>
                             <span style={{ color: timeLeft < 10 ? 'red' : 'black' }}>
